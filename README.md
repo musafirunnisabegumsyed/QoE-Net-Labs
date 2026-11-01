@@ -4,7 +4,7 @@
 
 A final-year CSE research prototype. It runs a real two-participant WebRTC video call, samples `RTCPeerConnection.getStats()` every 5 seconds, estimates QoE with a documented heuristic, applies an audio > teacher video > screen-share priority policy, and exports the collected measurements as a 28-column CSV.
 
-> Nothing is simulated. Metrics a browser does not report are exported as empty fields.
+> Nothing is simulated. Everything is collected from the websRTC .Metrics a browser does not report are exported as empty fields.
 
 ## Features
 - Two-party video call by room ID: mic, camera and screen-share controls, connection status, visible errors
