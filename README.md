@@ -21,7 +21,7 @@ cd qoe-net-labs
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
-Open **http://localhost:8000** in two browser windows, join the same Room ID, and allow camera and microphone.
+Open **https://videoqoe-lab.emergent.host/#dashboard** in two browser windows, join the same Room ID, and allow camera and microphone. Deployed using emergent.
 Open the site through the server. Opening `static/index.html` directly, VS Code Live Server or GitHub Pages cannot work, because the call needs the `/api` backend for signaling.
 
 ## Deploying (for a live demo link)
