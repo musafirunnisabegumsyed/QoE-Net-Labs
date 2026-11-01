@@ -16,7 +16,7 @@ A final-year CSE research prototype. It runs a real two-participant WebRTC video
 ## Quick start
 Requires Python 3.9+ and a modern desktop browser (Chrome or Edge recommended).
 ```bash
-git clone https://github.com/<your-username>/qoe-net-labs.git
+git clone https://github.com/musafirunnisabegumsyed/qoe-net-labs.git
 cd qoe-net-labs
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
