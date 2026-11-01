@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}QoE Dashboard — QoE-Net Labs{% endblock %}
+{% block content %}
+<h1 class="page-title">QoE Dashboard</h1>
+<section class="stats" id="statCards"></section>
+<div class="grid2">
+  <section class="card">
+    <h2>Live feed</h2>
+    <p class="muted">New five-second measurements appear here as participants send them.</p>
+    <label>Session <select id="liveSession"><option value="">Waiting for data…</option></select></label>
+    <canvas id="liveChart" height="170"></canvas>
+    <div id="liveLatest" class="muted"></div>
+  </section>
+  <section class="card">
+    <h2>Quality classes (all samples)</h2>
+    <div id="dist"></div>
+    <h2 class="mt">Averages</h2>
+    <dl class="metrics" id="avgs"></dl>
+  </section>
+</div>
+<section class="card">
+  <h2>Recent sessions</h2>
+  <div class="table-wrap"><table id="recent"><thead><tr>
+    <th>Started</th><th>Room</th><th>Participant</th><th>Status</th><th>Mean MOS</th><th>Class</th><th>Rating</th><th></th>
+  </tr></thead><tbody></tbody></table></div>
+</section>
+<section class="card">
+  <h2>Recent signaling events</h2>
+  <div class="table-wrap"><table id="sig"><thead><tr><th>Time</th><th>Event</th><th>Room</th></tr></thead><tbody></tbody></table></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

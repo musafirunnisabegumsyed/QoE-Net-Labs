@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B0F17">
+<meta name="description" content="Subjective and Objective Quality of Experience (QoE) Framework for Video Conferencing Services with Intermittent Network Connectivity — WebRTC research prototype">
+<title>QoE-Net Labs — WebRTC QoE Monitoring &amp; Prediction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head><body>
+<header><a class="logo" href="#home"><svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#2563EB"/><path d="M5 15l4-5 3 3 3-5 4 6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>QoE-Net <i>Labs</i></span><span class="dot"></span></a>
+<nav id="nav"><a href="#home">Home</a><a href="#conference">Conference</a><a href="#dashboard">QoE Dashboard</a><a href="#experiments">Experiments</a><a href="#history">History</a><a href="#about">About</a><span id="thm"><button data-t="light" title="Light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><button data-t="dark" class="on" title="Dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13A9 9 0 1111 3a7 7 0 0010 10z"/></svg></button></span></nav></header>
+<main>
+<section id="home">
+<span class="tag">Final-year CSE research prototype · WebRTC · Real measurements only</span>
+<h1>Subjective &amp; Objective QoE Framework for Video Conferencing under Intermittent Network Connectivity</h1>
+<p class="lead">This website runs a genuine two-participant WebRTC call and continuously samples the browser's <code>RTCPeerConnection.getStats()</code> API every 5 seconds to measure how RTT, jitter, packet loss, bitrate, frame rate, freezes and interruptions affect the estimated Quality of Experience. Nothing is simulated — when a metric is unavailable in your browser it is exported as an empty CSV field, never invented.</p>
+<div class="row"><a class="btn" href="#conference">Start a call &amp; monitor QoE</a><a class="btn s" href="#dashboard">Open live dashboard</a><a class="btn s" href="#about">Methodology</a></div>
+<div class="card ok"><p><b>Data integrity:</b> every number on this site is either a measured WebRTC statistic, a derived calculation from consecutive counters (documented formula), or a clearly labelled estimated QoE heuristic value. No random or fabricated telemetry is generated anywhere.</p></div>
+<h2 style="margin-top:28px">What is measured</h2>
+<div class="g">
+<div class="card"><h3>Network</h3><p>RTT (candidate-pair), inbound jitter, packet-loss % from packet counters, incoming/outgoing bitrate from byte-counter deltas, available bandwidth (congestion-controller estimate).</p></div>
+<div class="card"><h3>Audio</h3><p>Inbound audio bitrate, audio packet loss, NetEq concealment events — how often the decoder had to mask missing audio.</p></div>
+<div class="card"><h3>Video</h3><p>Inbound video bitrate, video packet loss, decoded FPS, dropped frames, freeze count &amp; total freeze duration (per 5 s interval deltas).</p></div>
+<div class="card"><h3>Connectivity</h3><p>Connection state, condition class (Normal / Degraded / Poor / Intermittent), interruption duration and recovery time.</p></div>
+</div>
+<h2 style="margin-top:28px">Architecture</h2>
+<div class="arch">
+<div class="card"><b>Browser A</b><br>getUserMedia → RTCPeerConnection (audio + camera + optional screen track)</div>
+<div class="card"><b>Signaling</b><br>FastAPI WebSocket <code>/api/ws/{room}</code> (+ HTTP polling fallback) — relays SDP &amp; ICE only</div>
+<div class="card"><b>Browser B</b><br>same stack — one peer connection per pair</div>
+<div class="card"><b>Sampler</b><br><code>getStats()</code> every 5 s → deltas → 28-column CSV record</div>
+<div class="card"><b>QoE engine</b><br>documented heuristic → estimated audio / video / overall score + class; priority policy adjusts senders</div>
+<div class="card"><b>Exports</b><br>CSV (client-side), summary TXT/JSON, experiment log</div>
+<div class="card"><b>History</b><br>session summaries + samples persisted to MongoDB via this backend</div>
+</div>
+<h2 style="margin-top:28px">Adaptive priority policy</h2>
+<p class="note">When the measured condition degrades, the policy protects media in this order (applied for real via <code>RTCRtpSender.setParameters()</code> — see the log on the Conference page):</p>
+<div class="g">
+<div class="card"><h3>P1 · Audio</h3><p>Never throttled by the policy — the Opus codec adapts by itself. Preserve speech at all costs.</p></div>
+<div class="card"><h3>P2 · Teacher video</h3><p>Camera encoding is reduced (bitrate / fps / resolution) before anything else visual is dropped.</p></div>
+<div class="card"><h3>P3 · Screen sharing</h3><p>First to be capped, first to be paused — on a third RTP sender of the same peer connection.</p></div>
+</div>
+<h2 style="margin-top:28px">Quick start for the demonstration</h2>
+<ol class="lead"><li>Open this site on two devices (or two browser windows). HTTPS/localhost is required for camera access.</li><li>Enter the same Room ID on both, join, and allow camera + microphone.</li><li>Press Start monitoring, accept the consent notice, and watch the live dashboard.</li><li>Use the Experiments page to mark Normal / High latency / Jitter / Loss / Interruption / Recovery phases, then stop monitoring and export the CSV.</li></ol>
+<h2>Academic details</h2>
+<div class="card tw"><table id="acad"></table></div>
+</section>
+
+<section id="conference">
+<span class="tag">Live conference</span>
+<h1>Join a video conference</h1>
+<p class="lead">Two participants per room, real peer-to-peer WebRTC media and real <code>getStats()</code> sampling every 5 s. If signaling or connectivity fails, the error is shown here — never masked.</p>
+<div class="card" id="lobby" style="max-width:640px;margin-top:28px;padding:20px">
+<h3>Enter a room</h3><p class="note">Share the same Room ID with the other participant (any short code you both choose).</p>
+<div class="row" style="flex-direction:column;align-items:stretch">
+<label class="lbl">Room ID<input id="room" style="width:100%" placeholder="e.g. qoe-demo-42"></label>
+<label class="lbl">Display name<input id="name" style="width:100%" placeholder="e.g. Teacher / Student"></label>
+<button class="btn" id="join" style="align-self:flex-start">Join call</button></div>
+<p class="note" style="margin-top:10px">Camera &amp; microphone access requires HTTPS or localhost. A consent notice appears before any monitoring data is recorded.</p></div>
+<div id="err" class="card" style="display:none;border-color:var(--e);color:var(--e);margin-top:14px"></div>
+<div id="call" style="display:none">
+<div class="row"><button class="btn s" id="mic">Mic on</button><button class="btn s" id="cam">Camera on</button><button class="btn s" id="scr">Share screen</button><button class="btn" id="mon">Start monitoring</button><button class="btn s" id="leave">Leave</button><span class="pillt" id="st">not connected</span></div>
+<div id="wait" class="banner">Waiting for the second participant to join…</div>
+<div class="callgrid"><div>
+<div class="vids"><div><div class="k" id="ln">Local</div><video id="lv" autoplay muted playsinline></video></div><div><div class="k" id="rn">Remote</div><video id="rv" autoplay playsinline></video></div></div>
+<div id="rsw" style="display:none;margin-top:14px"><div class="k">Remote screen share</div><video id="rs" autoplay muted playsinline></video></div></div>
+<div class="card"><h3>Live monitor</h3><div class="g" style="grid-template-columns:1fr 1fr;margin:8px 0"><div><div class="k">RTT</div><div class="v" id="cm_rtt">—</div></div><div><div class="k">Jitter</div><div class="v" id="cm_jit">—</div></div><div><div class="k">Loss</div><div class="v" id="cm_loss">—</div></div><div><div class="k">Est. QoE</div><div class="v" id="cm_qoe">—</div></div></div>
+<span class="pill" id="cm_cond" style="background:var(--in)">no data</span><p class="note" id="cm_rec" style="margin-top:8px">not recording</p><p class="note"><a href="#dashboard" style="color:var(--a)">Open full dashboard</a></p></div></div>
+<h3 style="margin-top:16px">Policy log</h3><div class="card"><div id="log" class="logbox">—</div></div>
+</div></section>
+
+<section id="dashboard">
+<span class="tag">Real-time telemetry</span>
+<h1>Live QoE dashboard</h1>
+<p class="lead">All values come from the active call's <code>RTCPeerConnection.getStats()</code> samples. Charts show only real collected measurements; missing metrics appear as gaps, not zeros.</p>
+<div class="card" id="nodata" style="margin:18px 0"><p>No live data. Join the <a href="#conference" style="color:var(--a)">conference</a> and press Start monitoring — charts will fill with real samples every 5 s.</p></div>
+<div class="row"><button class="btn" id="dstart">Start monitoring</button><button class="btn s" id="dstop">Stop</button><button class="btn s" id="csv">Download CSV</button><button class="btn s" id="clrd">Clear data</button><button class="btn s" id="sumj">Export summary (JSON)</button><button class="btn s" id="sumt">Export summary (TXT)</button></div>
+<p class="note" id="rec">not recording — start monitoring during a call to collect real getStats() samples</p>
+<div class="g tiles" id="tiles"></div>
+<div class="g2">
+<div class="card"><h3>Condition &amp; estimated QoE</h3>
+<div class="row" style="margin:8px 0"><span class="pill" id="cond" style="background:var(--in)">—</span><span class="note">estimated QoE</span><span class="note" id="ql">no data</span></div>
+<p class="note" id="why">No samples yet. Network categories are prototype thresholds, not universal standards.</p>
+<div class="k" style="margin-top:10px">Estimated QoE <span class="i" title="Heuristic 1–5 score from loss, RTT, jitter, FPS, freezes and bitrate. Not a subjective MOS.">i</span></div><div class="v" id="qv" style="font-size:38px">—</div>
+<div class="g mini" id="mini"></div></div>
+<div class="card"><h3>Priority allocation</h3>
+<div class="row"><span class="k">Priority policy <span class="i" title="Auto applies the policy whenever the condition class changes. Manual only applies when you press Apply now.">i</span></span>
+<span class="seg" id="pm"><button class="on" data-m="1">Auto</button><button data-m="0">Manual</button></span><button class="btn s" id="apply">Apply now</button></div>
+<div class="prio"><b>P1</b><span>Audio</span><em id="p1">not in call</em></div>
+<div class="prio"><b>P2</b><span>Teacher video (camera)</span><em id="p2">not in call</em></div>
+<div class="prio"><b>P3</b><span>Screen sharing</span><em id="p3">not in call</em></div>
+<p class="note" id="preason">No priority decision yet.</p>
+<p class="note" style="margin-top:10px">Reallocation uses <code>RTCRtpSender.setParameters()</code> (maxBitrate / maxFramerate / scaleResolutionDownBy) on the outgoing encodings and <code>MediaStreamTrack.enabled</code> for pausing screen share — real changes, not labels.</p></div>
+</div>
+<div class="row" style="justify-content:space-between;margin-top:28px"><h2 style="margin:0">Live charts</h2><span class="note">one point per 5 s sample</span></div>
+<div class="g2">
+<div class="card"><h3>Estimated QoE score over time</h3><p class="note">Heuristic estimate — not a subjective rating.</p><div class="cw"><canvas id="c_qoe"></canvas></div></div>
+<div class="card"><h3>RTT &amp; jitter over time</h3><p class="note"><span style="color:#22B8D6">■</span> RTT ms · <span style="color:#FBBF24">■</span> jitter ms</p><div class="cw"><canvas id="c_rtt"></canvas></div></div>
+<div class="card"><h3>Packet loss over time</h3><p class="note">percent</p><div class="cw"><canvas id="c_loss"></canvas></div></div>
+<div class="card"><h3>Bitrate over time</h3><p class="note"><span style="color:#34D399">■</span> incoming · <span style="color:#A78BFA">■</span> outgoing (kbps)</p><div class="cw"><canvas id="c_br"></canvas></div></div>
+<div class="card"><h3>FPS &amp; dropped frames over time</h3><p class="note"><span style="color:#F87171">■</span> FPS · <span style="color:#FBBF24">■</span> dropped frames</p><div class="cw"><canvas id="c_fps"></canvas></div></div>
+</div>
+<h2 style="margin-top:28px">Experiment summary</h2>
+<div class="card" id="sumbox"><p class="note">Summary appears here when you stop monitoring (or end the call). It includes duration, sample count, averages, interruptions, recovery time, priority changes and a Normal-vs-Degraded comparison.</p></div>
+<h2 style="margin-top:28px">Event &amp; priority decision log</h2>
+<div class="card"><div id="evlog" class="logbox"><span class="note">Priority decisions, connection events and experiment markers appear here with timestamps.</span></div></div>
+</section>
+
+<section id="experiments">
+<span class="tag">Controlled testing</span><h1>Network experiments</h1>
+<p class="lead">Mark when each connectivity scenario is introduced so faculty can match it with the measured samples. The page does <b>not</b> impose network impairments by itself: use an external tool (DevTools throttling, OS network conditioner, <code>tc netem</code>, Clumsy) or physical actions, then record it here.</p>
+<div class="card"><h3>Record a scenario</h3>
+<div class="row scn" id="scn"></div>
+<div class="row"><select id="meth"><option value="external">Method: external network tool (real impairment)</option><option value="physical">Method: physical action (Wi-Fi off, move away, airplane mode)</option><option value="simulated">Method: simulated in browser (not a network impairment)</option></select>
+<input id="xnote" style="flex:1;min-width:220px" placeholder="Optional note, e.g. netem delay 300ms"><button class="btn" id="addm">Add marker</button></div>
+<p>Current scenario: <b id="curs">Normal connectivity</b></p></div>
+<div class="card" style="margin-top:14px"><h3>Browser-side simulation (clearly labelled)</h3>
+<p class="note">Caps <i>my outgoing camera encoder</i> to 150 kbps via <code>RTCRtpSender.setParameters()</code>. This is a sender-side simulation, not a real network bandwidth limit. Turn Auto priority policy off on the dashboard first, otherwise it may override the cap.</p>
+<div class="row"><button class="btn s" id="cap">Enable sender cap (simulated)</button></div></div>
+<div class="card" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Manual experiment log</h3><span><button class="btn s" id="xcsv">Download log CSV</button> <button class="btn s" id="xclr">Clear log</button></span></div>
+<div class="tw"><table id="xlog"></table></div></div></section>
+
+<section id="history"><span class="tag">Saved sessions</span><h1>Experiment history</h1>
+<p class="lead">Sessions are saved to the backend when you stop monitoring. Download the CSV of any session in the 28-column schema.</p>
+<div class="row"><button class="btn s" id="hrefresh">Refresh</button></div>
+<div class="card tw"><table id="ht"></table></div></section>
+
+<section id="about"><span class="tag">Methodology</span><h1>About the project</h1>
+<p class="lead">Subjective and Objective Quality of Experience (QoE) Framework for Video Conferencing Services with Intermittent Network Connectivity — a final-year CSE research prototype.</p>
+<div class="card"><h3>Project details (edit for your report)</h3><div class="row"><input id="a_g" placeholder="Guide"><input id="a_t" placeholder="Team"><input id="a_c" placeholder="Course"><button class="btn" id="a_s">Save</button></div></div>
+<div class="card" style="margin-top:14px"><h3>Design</h3><p class="note">One <code>RTCPeerConnection</code> per pair with three RTP senders: P1 microphone audio, P2 camera video, P3 optional screen-share video. The FastAPI server only relays SDP/ICE. Statistics are sampled in each browser from its own peer connection, so values describe <i>that peer's</i> view of the call, not the whole network.</p></div>
+<div class="card" style="margin-top:14px"><h3>Measured vs derived</h3><p class="note"><b>Measured:</b> RTT, jitter, byte/packet/frame counters, freeze and concealment counters, connection state. <b>Derived:</b> bitrates (Δbytes×8 / Δt), loss % (Δlost / (Δlost + Δreceived)), per-interval deltas, interruption and recovery times (5 s resolution), available bandwidth (browser congestion-controller <i>estimate</i>, Chromium only). <b>Estimated:</b> audio/video/overall quality and class — a configurable heuristic, not a subjective rating and not a machine-learning model.</p></div>
+<div class="card" style="margin-top:14px"><h3>Configuration in use (edit <code>js/config.js</code>)</h3><pre class="cfg" id="cfg"></pre></div>
+<div class="card" style="margin-top:14px"><h3>Known limitations</h3><ul class="lim"><li>Browsers cannot reliably impose packet loss or bandwidth limits on the real network; use external tools and record them on the Experiments page.</li><li>Metric support differs by browser: <code>availableOutgoingBitrate</code>, freeze and concealment counters are mainly Chromium. Unsupported values are exported as empty fields.</li><li>Interruption/recovery times have 5 s resolution.</li><li>Without a TURN server, strict NATs or firewalls can block the connection; the error is shown, not hidden.</li><li>The quality scores are prototype estimates and were not validated against subjective ratings.</li></ul></div>
+<div class="card" style="margin-top:14px"><h3>This browser</h3><pre class="cfg" id="binfo"></pre></div></section>
+
+</main>
+<footer style="border-top:1px solid var(--b);padding:20px;text-align:center" class="note"><b>QoE-Net Labs</b> — Subjective and Objective Quality of Experience (QoE) Framework for Video Conferencing Services with Intermittent Network Connectivity.<br>Academic research prototype · All measurements are real WebRTC <code>getStats()</code> readings · Estimated QoE is heuristic, not a subjective rating</footer>
+<dialog id="dlg"><h3>Monitoring consent</h3><p class="note">Monitoring records connection statistics (no media content) from this call. Samples are kept in this browser and saved to the History database when you stop.</p>
+<div class="row"><button class="btn" id="ok">Accept &amp; start</button><button class="btn s" id="no">Cancel</button></div></dialog>
+<script src="js/config.js"></script><script src="js/data.js"></script><script src="js/qoe.js"></script><script src="js/rtc.js"></script><script src="js/monitor.js"></script><script src="js/ui.js"></script>
+</body></html>

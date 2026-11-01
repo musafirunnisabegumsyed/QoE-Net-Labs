@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B0F17">
+  <meta name="description" content="Subjective and Objective Quality of Experience (QoE) Framework for Video Conferencing Services with Intermittent Network Connectivity.">
+  <title>{% block title %}QoE-Net Labs — WebRTC QoE Monitoring & Prediction{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('pages.home') }}">QoE-Net <em>Labs</em></a>
+    <nav>
+      {% set items = [('pages.home','Home'),('pages.conference','Conference'),('pages.dashboard','QoE Dashboard'),('pages.experiments','Experiments'),('pages.history','History'),('pages.about','About')] %}
+      {% for ep, label in items %}
+      <a href="{{ url_for(ep) }}" {% if request.endpoint == ep %}aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="footer">
+    <p><strong>QoE-Net Labs</strong> — Subjective and Objective Quality of Experience (QoE) Framework for Video Conferencing Services with Intermittent Network Connectivity.</p>
+    <p class="muted">Academic research prototype. All measurements are real WebRTC <code>getStats()</code> readings. Estimated QoE is heuristic, not a subjective rating.</p>
+  </footer>
+  <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

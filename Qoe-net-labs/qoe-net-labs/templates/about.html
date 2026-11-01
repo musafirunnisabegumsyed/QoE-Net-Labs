@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}About — QoE-Net Labs{% endblock %}
+{% block content %}
+<h1 class="page-title">About</h1>
+<article class="prose">
+  <p>QoE-Net Labs is a research prototype for studying video-conferencing quality when connectivity is intermittent. It pairs objective transport measurements with subjective ratings from the people on the call.</p>
+
+  <h2>What runs where</h2>
+  <p>The browser owns camera and microphone access, the peer connection, the five-second <code>getStats()</code> loop and media resource allocation (resolution, frame rate, bitrate cap). The Flask server only relays signaling over Socket.IO (room join, SDP offer and answer, ICE candidates) and stores sessions, measurements and experiments in MongoDB. No video passes through the server.</p>
+
+  <h2>Measurements</h2>
+  <p>Each window reports received bitrate, frame rate, frame size, packet loss, jitter, round-trip time, freeze count and duration, jitter-buffer delay, send bitrate, available outgoing bitrate and the encoder's quality-limitation reason.</p>
+
+  <h2>Estimated QoE</h2>
+  <p>The server maps each window to an estimated mean opinion score from 1 to 5. Video quality comes from bitrate adequacy for the received resolution, frame rate and resolution. Penalties are then subtracted for packet loss, one-way delay, jitter and freezes. A window with no received media scores 1.0.</p>
+  <table class="plain"><thead><tr><th>Class</th><th>MOS</th></tr></thead><tbody>
+    <tr><td>Excellent</td><td>4.3 and above</td></tr><tr><td>Good</td><td>3.6 to 4.3</td></tr><tr><td>Fair</td><td>2.6 to 3.6</td></tr><tr><td>Poor</td><td>1.8 to 2.6</td></tr><tr><td>Bad</td><td>below 1.8</td></tr>
+  </tbody></table>
+
+  <h2>Limits</h2>
+  <p>The score is a heuristic, not ITU-T P.1203 and not a subjective result. Use the post-call rating and the Pearson correlation on the dashboard to see how well it tracks participants. The "Inject outage" control pauses the sender's encodings, which is real but only one kind of interruption. For packet loss, delay or bandwidth caps, shape the network outside the browser (Chrome DevTools throttling, <code>tc netem</code> on Linux, Network Link Conditioner on macOS).</p>
+</article>
+{% endblock %}

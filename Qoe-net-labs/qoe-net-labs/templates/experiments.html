@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Experiments — QoE-Net Labs{% endblock %}
+{% block content %}
+<h1 class="page-title">Experiments</h1>
+<div class="grid2">
+  <section class="card">
+    <h2>New experiment</h2>
+    <form id="expForm">
+      <label>Name <input name="name" required maxlength="80" placeholder="e.g. 720p at 500 kbps cap"></label>
+      <label>Scenario <select name="scenario" id="scenario"></select></label>
+      <label>Description <textarea name="description" rows="2" maxlength="500"></textarea></label>
+      <div class="row">
+        <label>Resolution <select name="resolution"><option>320x240</option><option selected>640x480</option><option>1280x720</option><option>1920x1080</option></select></label>
+        <label>FPS <select name="fps"><option>10</option><option>15</option><option>24</option><option selected>30</option></select></label>
+      </div>
+      <label>Max bitrate (kbps) <input name="max_bitrate_kbps" type="number" value="1000" min="50" max="8000"></label>
+      <div class="row">
+        <label>Outage length (s) <input name="outage_duration_s" type="number" value="0" min="0" max="60"></label>
+        <label>Repeat every (s) <input name="outage_interval_s" type="number" value="0" min="0" max="600"></label>
+      </div>
+      <p class="muted">Outage length 0 means no injected outages. Repeat 0 with a length set means a single outage 20 s after connecting.</p>
+      <button class="btn primary" type="submit">Save experiment</button>
+      <p id="expMsg" class="muted"></p>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Export</h2>
+    <p class="muted">Download all experiment records, or all sessions and measurements.</p>
+    <div class="actions wrap">
+      <a class="btn" href="/api/export/experiments.csv">Experiments CSV</a>
+      <a class="btn" href="/api/export/experiments.json">Experiments JSON</a>
+      <a class="btn" href="/api/export/sessions.csv">Sessions CSV</a>
+      <a class="btn" href="/api/export/measurements.csv">Measurements CSV</a>
+      <a class="btn" href="/api/export/measurements.json">Measurements JSON</a>
+    </div>
+  </section>
+</div>
+<section class="card">
+  <h2>Recorded experiments</h2>
+  <div class="table-wrap"><table id="expTable"><thead><tr>
+    <th>Name</th><th>Scenario</th><th>Settings</th><th>Sessions</th><th>Mean MOS</th><th>Mean rating</th><th></th>
+  </tr></thead><tbody></tbody></table></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/experiments.js') }}"></script>{% endblock %}

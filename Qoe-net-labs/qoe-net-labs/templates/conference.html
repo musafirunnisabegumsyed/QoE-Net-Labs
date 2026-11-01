@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Conference — QoE-Net Labs{% endblock %}
+{% block content %}
+<h1 class="page-title">Conference</h1>
+<div class="conf">
+  <section class="stage">
+    <div class="videos">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay playsinline muted></video>
+      <p id="stageNote" class="stage-note">Start your camera, then join a room. Open the same room in a second browser or device.</p>
+    </div>
+    <div class="controls">
+      <button class="btn" id="btnMedia">Start camera and microphone</button>
+      <button class="btn primary" id="btnJoin" disabled>Join room</button>
+      <button class="btn danger" id="btnLeave" disabled>Leave and rate</button>
+      <span id="connBadge" class="pill">not connected</span>
+    </div>
+    <div id="ratingPanel" class="card" hidden>
+      <h2>How was the call quality?</h2>
+      <p class="muted">Your rating is stored next to the measured QoE for this session.</p>
+      <div class="rate" id="rateButtons"></div>
+      <textarea id="rateComment" rows="2" maxlength="500" placeholder="Optional comment: freezes, audio problems, delays"></textarea>
+      <button class="btn primary" id="btnRate">Save rating</button>
+      <p id="rateResult" class="muted"></p>
+    </div>
+    <div id="log" class="log" aria-live="polite"></div>
+  </section>
+
+  <aside class="side">
+    <section class="card">
+      <h2>Session</h2>
+      <label>Room <input id="room" value="lab-1" maxlength="64"></label>
+      <label>Your name <input id="name" value="" maxlength="48" placeholder="Participant"></label>
+      <label>Experiment
+        <select id="experiment"><option value="">None (free session)</option></select>
+      </label>
+    </section>
+    <section class="card">
+      <h2>Media resource allocation</h2>
+      <label>Resolution
+        <select id="resolution">
+          <option>320x240</option><option selected>640x480</option><option>1280x720</option><option>1920x1080</option>
+        </select>
+      </label>
+      <label>Frame rate (fps)
+        <select id="fps"><option>10</option><option>15</option><option>24</option><option selected>30</option></select>
+      </label>
+      <label>Max video bitrate (kbps) <input id="bitrate" type="number" min="50" max="8000" value="1000"></label>
+      <button class="btn" id="btnApply">Apply now</button>
+    </section>
+    <section class="card">
+      <h2>Intermittent connectivity</h2>
+      <p class="muted">Pauses what you send. The other peer's measurements show the effect.</p>
+      <label>Outage length (s) <input id="outageLen" type="number" min="1" max="60" value="8"></label>
+      <button class="btn" id="btnOutage" disabled>Inject outage</button>
+      <p id="outageStatus" class="muted"></p>
+    </section>
+  </aside>
+</div>
+
+<section class="card live">
+  <div class="live-head">
+    <div><span class="muted">Estimated QoE (MOS, last 5 s window)</span><div id="mos" class="mos">–</div></div>
+    <span id="qoeClass" class="badge">no data</span>
+    <div class="muted" id="sampleCount">0 samples</div>
+  </div>
+  <canvas id="mosChart" height="160"></canvas>
+  <dl class="metrics" id="metrics">
+    <div><dt>Received bitrate</dt><dd id="m_bitrate">–</dd></div>
+    <div><dt>Frame rate</dt><dd id="m_fps">–</dd></div>
+    <div><dt>Resolution</dt><dd id="m_res">–</dd></div>
+    <div><dt>Packet loss</dt><dd id="m_loss">–</dd></div>
+    <div><dt>Jitter</dt><dd id="m_jitter">–</dd></div>
+    <div><dt>Round-trip time</dt><dd id="m_rtt">–</dd></div>
+    <div><dt>Freezes</dt><dd id="m_freeze">–</dd></div>
+    <div><dt>Send bitrate</dt><dd id="m_send">–</dd></div>
+    <div><dt>Encoder limit</dt><dd id="m_limit">–</dd></div>
+  </dl>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/conference.js') }}"></script>
+{% endblock %}
